@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Scroll Region Capture",
+  "version": "0.1.0",
+  "description": "Capture a scrolling region of any page as one tall PNG. Drag a box, drag it down, get a screenshot.",
+  "permissions": ["activeTab", "scripting"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_title": "Capture a scrolling region"
+  }
+}

@@ -1,0 +1,152 @@
+/* overlay.css — styles for every element this extension injects into a page.
+ *
+ * Two rules apply to everything in here:
+ *   1. Every class name starts with "src-capture-" so the page's own CSS can never
+ *      accidentally match our elements, and our CSS can never match theirs.
+ *   2. Every property is marked !important. Some sites set very aggressive global
+ *      rules (e.g. "div { all: unset }") that would otherwise wreck the overlay.
+ */
+
+/* The root element: a fixed, full-screen sheet that sits above all page content.
+ * 2147483647 is the largest z-index a browser accepts, so nothing can cover us. */
+.src-capture-root {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  cursor: crosshair !important;
+  /* The dim. Deliberately light so the user can still read the page they are selecting. */
+  background: rgba(0, 0, 0, 0.28) !important;
+  /* Stop the page underneath from getting our clicks, hovers or key presses. */
+  pointer-events: auto !important;
+  /* Reset anything the page might have inherited onto it. */
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  /* Removing the focus ring — we focus the root so Esc always reaches us. */
+  outline: none !important;
+  /* Prevent text on the page being selected while dragging over it. */
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* A short instruction line pinned to the top of the screen. */
+.src-capture-hint {
+  position: absolute !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  /* A plain system font stack so we never depend on the page's fonts. */
+  font: 500 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif !important;
+  color: #ffffff !important;
+  background: rgba(17, 17, 17, 0.88) !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* The keyboard-key look for "Esc" inside the hint. */
+.src-capture-key {
+  display: inline-block !important;
+  font: inherit !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 4px !important;
+  padding: 1px 5px !important;
+  margin: 0 2px !important;
+}
+
+/* --- Phase 2: selection box, handle and readout ---------------------------- */
+
+/* Once a box exists, the root stops dimming the page itself. The dim is taken over
+ * by the box's giant box-shadow (below), which leaves the selected region clear so
+ * the user can actually read the content they are capturing. */
+.src-capture-root--cutout {
+  background: transparent !important;
+}
+
+/* Temporarily makes the whole overlay transparent to the mouse, so
+ * document.elementFromPoint can see the page underneath instead of seeing us.
+ * The "*" is important — it has to apply to our children too. */
+.src-capture-root--passthrough,
+.src-capture-root--passthrough * {
+  pointer-events: none !important;
+}
+
+/* The selection rectangle. The 100vmax box-shadow spread paints the dim over
+ * everything outside the box, in every direction, however large the screen is. */
+.src-capture-box {
+  position: absolute !important;
+  box-sizing: border-box !important;
+  border: 2px solid #3b82f6 !important;
+  background: transparent !important;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.28) !important;
+  /* The box itself must not eat clicks — only its handle does. */
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Used to take the box out of view without deleting it. A class rather than
+ * el.hidden, because a page could have "[hidden] { display: block }" in its CSS. */
+.src-capture-hidden {
+  display: none !important;
+}
+
+/* The grab handle, centred on the bottom edge of the box. Half of it hangs below
+ * the border so it is easy to hit. */
+.src-capture-handle {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -11px !important;
+  transform: translateX(-50%) !important;
+  width: 72px !important;
+  height: 20px !important;
+  box-sizing: border-box !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 10px !important;
+  background: #3b82f6 !important;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important;
+  cursor: ns-resize !important;
+  /* This one element does accept the mouse, so it can be dragged. */
+  pointer-events: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Two little grip lines drawn inside the handle, purely so it looks draggable. */
+.src-capture-handle::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 5px 26px !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Small readout pinned just above the box: size, and how far we have scrolled. */
+.src-capture-label {
+  position: absolute !important;
+  font: 500 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif !important;
+  color: #ffffff !important;
+  background: rgba(17, 17, 17, 0.88) !important;
+  padding: 3px 7px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* --- Phase 3: hiding the overlay while a screenshot is taken --------------- */
+
+/* captureVisibleTab photographs whatever is on screen, overlay included. Before each
+ * shot we add this class so the selection border and dim do not get baked into the
+ * image. visibility (not display) is used deliberately: the layout stays exactly as
+ * it is, so nothing on the page shifts between one strip and the next. */
+.src-capture-invisible {
+  visibility: hidden !important;
+}
