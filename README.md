@@ -40,7 +40,7 @@ _A short GIF goes here — a chat thread or long article shows it best._
 Not on the Chrome Web Store yet — load it unpacked:
 
 ```bash
-git clone https://github.com/Tanishq1902/FULL_SS.git
+git clone https://github.com/Tanishq1902/Scroll_Capture.git
 ```
 
 1. Open `chrome://extensions`
