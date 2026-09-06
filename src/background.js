@@ -11,7 +11,9 @@
 
 // --- Job 1: injection -------------------------------------------------------
 
-// Runs when the user clicks the extension's toolbar icon.
+// Runs when the user clicks the extension's toolbar icon — and also when they press
+// the Alt+Shift+S shortcut from the manifest's "_execute_action" command, which
+// Chrome delivers here exactly as if the icon had been clicked. No extra code needed.
 // We only get permission to touch the page at this exact moment, thanks to "activeTab",
 // which is why injection happens here instead of via a declared content script.
 chrome.action.onClicked.addListener(async (tab) => {

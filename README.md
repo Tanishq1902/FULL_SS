@@ -1,108 +1,134 @@
-# Scroll Region Capture — Chrome Extension
+# 📸 Scroll Region Capture
 
-Capture a scrolling region of any page as one tall PNG. Drag a box, drag it down, get a screenshot.
+**Screenshot part of a scrolling page — not the whole thing.**
 
-Unlike existing tools that capture the entire page from top to bottom, this captures **an arbitrary region starting and ending wherever you choose** — for example, questions 3 through 9 of a 100-question chat transcript.
+Draw a box around what you want, drag it through scrolling content, get one tall PNG with just that part. Works on any site — Claude, ChatGPT, Wikipedia, docs, dashboards — with no setup.
 
-Works on any site: Claude, ChatGPT, Gemini, Wikipedia, docs, dashboards. No site-specific selectors.
-
-![Manifest V3](https://img.shields.io/badge/manifest-v3-blue) ![License MIT](https://img.shields.io/badge/license-MIT-green)
-
----
-
-## Features
-
-- **Arbitrary region capture** — drag any rectangle, extend it vertically through scrolling content
-- **Universal scroll detection** — automatically finds the real scroll container (inner `div` or `window`)
-- **High-DPI aware** — preserves full device pixel ratio, no blurry crops on Retina displays
-- **Seamless stitching** — overlaps strips by 40px+ and trims faded edge rows to avoid white-line seams and duplicated fade bands
-- **Smart alignment** — pixel-level seam matching corrects for lazy-loaded content shifting scroll positions
-- **Sticky-header handling** — temporarily hides fixed/sticky bars that would otherwise repeat down the image
-- **Minimal permissions** — only `activeTab` + `scripting`, no `<all_urls>`, no network requests
+![Manifest V3](https://img.shields.io/badge/manifest-v3-blue)
+![License MIT](https://img.shields.io/badge/license-MIT-green)
+![No build step](https://img.shields.io/badge/build-none-lightgrey)
+![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
 ---
 
-## Install (Load Unpacked)
+## 🎬 Demo
 
-1. Clone this repo or download as ZIP and extract:
-   ```bash
-   git clone https://github.com/Tanishq1902/FULL_SS.git
-   ```
-2. Open Chrome and go to `chrome://extensions`
-3. Enable **Developer mode** (toggle in top-right)
-4. Click **Load unpacked** → select the project folder (the one containing `manifest.json`)
-5. Pin the extension to your toolbar if you like
+<!-- Record a short GIF and save it as docs/demo.gif, then uncomment: -->
+<!-- ![Demo](docs/demo.gif) -->
 
-No build step, no npm, no bundler — plain files loadable directly.
+_A short GIF goes here — a chat thread or long article shows it best._
 
 ---
 
-## How to Use
+## ✨ What it can do
 
-1. Click the extension icon in the toolbar — the page dims and cursor becomes a crosshair
-2. **Drag** a rectangle over the region you want
-3. A blue box with a handle on its bottom edge appears
-4. **Drag the handle downward** — when near the viewport bottom, content auto-scrolls under the fixed box (speed ramps from ~2px to ~35px per frame)
-5. **Release** the handle — capture runs automatically with progress text (`Capturing 3 of 12…`)
-6. A stitched PNG downloads (`capture-YYYYMMDD-HHMMSS.png`) and the page scroll is restored
-7. Press `Esc` at any time to cancel and clean up
+- 🎯 Capture **any rectangle**, extended through as much scrolled content as you like (up or down)
+- 📦 **Click once** inside a chat/article to select the whole scrolling area — no dragging
+- ⚡ **Full page button** captures the main scrolling area in one click
+- ✏️ Move and resize the box before capturing (corners + sides)
+- 🔍 Finds the real scroller automatically (window or inner `div`)
+- 🖥️ Sharp on retina displays, 🧵 seamless joins, 🌫️ handles faded edges, 📌 hides sticky headers so they don't repeat
+- ✂️ Very tall captures auto-split into numbered PNGs
+- 📋 Downloads **and** copies to clipboard
+- ⌨️ Shortcut: `Alt+Shift+S`
+- 🔒 Only asks for `activeTab` + `scripting`. No tracking, no network requests.
 
 ---
 
-## Project Structure
+## 🚀 Install (30 seconds)
 
-```
-.
-├── manifest.json      # Manifest V3 — activeTab + scripting only
-├── src/
-│   ├── background.js  # Service worker: injects overlay + handles captureVisibleTab
-│   ├── overlay.js     # Content script: UI, drag, scroll, crop, stitch, download
-│   └── overlay.css    # Overlay styles (all classes prefixed src-capture-)
-├── SPEC.md            # Full product spec and build phases
-└── LICENSE            # MIT
+Not on the Chrome Web Store yet — load it unpacked:
+
+```bash
+git clone https://github.com/Tanishq1902/FULL_SS.git
 ```
 
-### Architecture
+1. Open `chrome://extensions`
+2. Enable **Developer mode** (top-right)
+3. Click **Load unpacked** → select the folder containing `manifest.json`
+4. Pin it (puzzle icon 🧩 → pin **Scroll Region Capture**)
 
-- **`src/background.js`** — tiny service worker. Two jobs only: `chrome.scripting.executeScript` injection on icon click, and `chrome.tabs.captureVisibleTab` in response to `CAPTURE_VIEWPORT` messages.
-- **`src/overlay.js`** — everything else. DOM overlay, rectangle/handle logic, ramped edge-scroll via `requestAnimationFrame`, scroll-container detection (`elementFromPoint` + ancestor walk), capture loop, `devicePixelRatio` cropping via `createImageBitmap`, canvas stitching, and download via object URL.
-- **`src/overlay.css`** — fixed fullscreen dim sheet (`z-index: 2147483647`), box with `box-shadow` cutout, handle, hint/label, and `.src-capture-invisible` for hiding UI during screenshots.
-
-Injection uses `activeTab` so the extension has zero access until you click the icon.
+No npm, no build. Works in Chrome, Edge, Brave, Arc, Opera — anything with Manifest V3.
 
 ---
 
-## Permissions Explained
+## 🕹️ How to use
+
+1. Click the toolbar icon (or press `Alt+Shift+S`). The page dims.
+2. **Drag a box** over what you want — or **click once** to grab the whole scrolling area.
+3. Optional: drag inside to move, drag the squares to resize.
+4. To include scrolled content: drag the **bottom pill down** (or top pill up). Near the screen edge, the page auto-scrolls behind the box.
+5. Press `Enter` (or click **Capture**). The PNG downloads and copies to clipboard.
+
+> Tip: position and size the box first, *then* extend it — moving/resizing resets the marked scroll range.
+
+### ⌨️ Keys
+
+| Key | Action |
+|---|---|
+| `Alt+Shift+S` | Open overlay |
+| `Enter` | Start capture |
+| `Esc` | Cancel (works mid-capture too) |
+| Click icon again | Close overlay |
+
+### 📁 Output
+
+```
+wikipedia-article-20260902-143022.png
+wikipedia-article-20260902-143022-part-1.png   # only if very tall
+wikipedia-article-20260902-143022-part-2.png
+```
+
+---
+
+## 🔐 Privacy
 
 | Permission | Why |
 |---|---|
-| `activeTab` | Access the current tab only after you click the icon |
-| `scripting` | Inject the overlay CSS/JS once |
+| `activeTab` | Touch the current tab only after you click the icon |
+| `scripting` | Inject the overlay once |
 
-No `host_permissions`, no `tabs`, no `downloads` (download uses a synthetic anchor click), no analytics, no network calls.
+Not requested: `<all_urls>`, `tabs`, `storage`, `downloads`.
 
----
-
-## Development
-
-Reload after editing:
-
-1. `chrome://extensions` → click the refresh icon on the extension card
-2. Reload the test page
-
-Test checklist (from `SPEC.md`):
-
-- [ ] Long Wikipedia article (window scrolls)
-- [ ] Long Claude/ChatGPT thread (inner div scrolls)
-- [ ] Page with sticky header (header should not repeat)
-- [ ] High-DPI display (crop at correct coordinates)
-- [ ] Very long selection (split at 30,000px)
-- [ ] Capture twice without reloading
-- [ ] `Esc` mid-drag then restart
-- [ ] Scroll position restored after capture
+- No network requests, no analytics, no accounts. You can search the source — there are none (the only `fetch()` reads a local `data:` URL to build the PNG).
+- Nothing leaves your browser.
 
 ---
 
-## License
+## 🗂️ Files
+
+```
+manifest.json       # Manifest V3, activeTab + scripting only
+src/background.js   # Injects overlay + takes screenshots
+src/overlay.js      # UI, scrolling, stitching, saving
+src/overlay.css     # Overlay styles (src-capture-* classes)
+SPEC.md             # Full technical spec
+```
+
+See [SPEC.md](SPEC.md) for how scrolling, seams, fades, and splitting work, plus the tuning constants.
+
+---
+
+## 🚧 Limitations
+
+- **iframes** don't scroll (would need broader permissions).
+- Sticky bars inside **shadow DOM** aren't hidden.
+- **Virtualised / infinite lists** may re-render mid-capture — seams fall back to the scroll estimate.
+- Vertical scrolling only. `chrome://` pages and the Web Store block all extensions.
+- If you switch windows mid-capture, auto-copy may fail — use the **Copy** button. Only part 1 of a split capture goes to clipboard.
+
+---
+
+## 🧪 Before you contribute
+
+Quick manual check: a Wikipedia article (window scroll), a Claude/ChatGPT thread (inner scroll + fades), a sticky header, a retina screen, `Esc` mid-capture, and capture twice without reload. Full list in [SPEC.md](SPEC.md).
+
+Roadmap highlights: icon set, wheel-forwarding while overlay is open, preview before save, JPEG/WebP/PDF, Firefox port.
+
+Ground rules: **no build step, no libraries, no site-specific selectors, no network requests.** Every function gets a short why-comment. See [SPEC.md](SPEC.md) § Ground rules.
+
+---
+
+## 📄 License
 
 MIT © 2026 Sadaram Tanishq — see [LICENSE](LICENSE).
